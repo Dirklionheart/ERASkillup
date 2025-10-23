@@ -1,5 +1,5 @@
 packets = require('packets')
-res = require 'resources'
+res = require('resources')
 --version 20251015
 ----------USER IN CODE SETTINGS----------
 ---Put the spells you want to use in these tables
@@ -13,8 +13,13 @@ user_settings = {
         Ninjutsu = T{},
         Singing = T{},
         Blue = T{},
-        Summoning = T{}},
-    save_settings = false} --change this to true if you wish to save the last position of your skillup window
+        Summoning = T{},
+		Elemental = T{'Choke','Shock','Rasp'}, --MUST USE A DOT!!!!!!!!!!!
+		Dark = T{'Bio','Bio II'},
+		Enfeebling = T{'Blind', 'Bind','Poison'},
+		Divine = T{'Banish','Banish II'}},
+    save_settings = false, --change this to true if you wish to save the last position of your skillup window
+	target = "Halojade"} --Change to your target
 sets.brd = {
     wind_inst = {
         range="Cornette"},--put your wind instrument here
@@ -30,11 +35,11 @@ sets.Idle = {
     }
 --DO NOT CHANGE ANY THING BELOW THIS LINE--
 function get_sets()
-    skilluprun = false
-    gs_skill = {skillup_table = {"Healing","Enhancing","Ninjutsu","Singing","Blue","Summoning"},skillup_type = 'None',skillup_spells = T{},
+	skilluprun = false
+    gs_skill = {skillup_table = {"Healing","Enhancing","Ninjutsu","Singing","Blue","Summoning","Elemental","Dark","Enfeebling","Divine"},skillup_type = 'None',skillup_spells = T{},
         skillup_count=1,bluspellulid = {['Harden Shell']=737,['Pyric Bulwark']=741,['Carcharian Verve']=745}}
     end_skillup = {shutdown = false,logoff = false,stoptype = "Stop"}
-    gs_skillup = {color={HEL=true,ENH=true,NIN=true,SIN=true,BLU=true,SMN=true,STOP=true,DOWN=true,LOG=true,TEST=true,REF=true},
+    gs_skillup = {color={HEL=true,ENH=true,NIN=true,SIN=true,BLU=true,SMN=true, ELE=true, DAR=true, ENF=true, DIV=true,STOP=true,DOWN=true,LOG=true,TEST=false,REF=true},
                 skill_ups={},total_skill_ups=0,skill={},test_mode=false,test_brd="Wind",skipped_spells=T{}}
     gs_skillup.box={pos={x=211,y=402},text={font='Segoe UI Symbol',size=12,Fonts={'sans-serif'},},bg={alpha=255}}
     gs_skillup.boxa={pos={x=gs_skillup.box.pos.x - 145,y=gs_skillup.box.pos.y},text={font='Segoe UI Symbol',size=9},bg={alpha=255}}
@@ -61,7 +66,7 @@ function status_change(new,old)
     end
     if new=='Idle' then
         if skilluprun then
-            send_command('wait 1.0;input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" <me>')
+            send_command('wait 1.0;input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" '..user_settings.target)
         end
     elseif new=='Resting' then
         coroutine.schedule(go_to_idle_gear, 30)
@@ -71,7 +76,9 @@ function go_to_idle_gear()
     equip(sets.Idle)
 end
 function filtered_action(spell)
-    if check_skill_cap() or not skilluprun then cancel_spell() shutdown_logoff() return end
+    if check_skill_cap() or not skilluprun then cancel_spell() shutdown_logoff() 
+		return 
+	end
     if gs_skill.bluspellulid[spell.en] then
         if windower.ffxi.get_ability_recasts()[81] and windower.ffxi.get_ability_recasts()[81] == 0 then
             cancel_spell()
@@ -82,7 +89,7 @@ function filtered_action(spell)
         else
             cancel_spell()
             gs_skill.skillup_count = (gs_skill.skillup_count % #gs_skill.skillup_spells) + 1
-            send_command('input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" <me>')
+            send_command('input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" '..user_settings.target)
         end
         return
     elseif S{"Avatar's Favor","Elemental Siphon"}:contains(spell.en) then
@@ -95,7 +102,7 @@ function filtered_action(spell)
         end
         cancel_spell()
         gs_skill.skillup_count = (gs_skill.skillup_count % #gs_skill.skillup_spells) + 1
-        send_command('input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" <me>')
+        send_command('input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" '..user_settings.target)
     end
 end
 function precast(spell)
@@ -111,7 +118,11 @@ function precast(spell)
             return
         end
     end
-    if check_skill_cap() or not skilluprun then cancel_spell() shutdown_logoff() return end
+    if check_skill_cap() or not skilluprun then
+		cancel_spell() 
+		shutdown_logoff() 
+		return
+	end
     if gs_skill.skillup_type == "Singing" then
         if (gs_skillup.test_mode and gs_skillup.test_brd == "String") or not gs_skillup.skill['Stringed Instrument Capped'] then
             equip(sets.brd.string_inst)
@@ -137,7 +148,7 @@ function precast(spell)
         if not spell_usable(spell) then
             cancel_spell()
             gs_skill.skillup_count = (gs_skill.skillup_count % #gs_skill.skillup_spells) + 1
-            send_command('input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" <me>')
+            send_command('input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" '..user_settings.target)
         else
             gs_skill.skillup_count = (gs_skill.skillup_count % #gs_skill.skillup_spells) + 1
         end
@@ -151,7 +162,7 @@ function aftercast(spell)
             send_command('wait 0.5;input /ja "'..res.job_abilities[90][gearswap.language]..'" <me>')
             return
         else
-            send_command('wait 3.0;input /ma "'..spell.name..'" <me>')
+            send_command('wait 5.0;input /ma "'..spell.name..'" '..user_settings.target)
             return
         end
     elseif spell.type == "SummonerPact" then
@@ -161,14 +172,16 @@ function aftercast(spell)
         elseif not spell.en:contains('Spirit') then
             send_command('wait 4.0;input /ja "'..res.job_abilities[250][gearswap.language]..'" <me>')
         else
-            send_command('wait 3.0;input /ja "'..res.job_abilities[90][gearswap.language]..'" <me>')
+            send_command('wait 5.0;input /ja "'..res.job_abilities[90][gearswap.language]..'" <me>')
         end
     elseif spell.en == "Avatar's Favor" then
         send_command('wait 1.0;input /ja "'..res.job_abilities[90][gearswap.language]..'" <me>')
     elseif spell.en == "Elemental Siphon" then
         send_command('wait 1.0;input /ja "'..res.job_abilities[90][gearswap.language]..'" <me>')
+	elseif spell.type == "BlackMagic" then
+		send_command('wait 5.0;input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" '..user_settings.target)
     else
-        send_command('wait 3.0;input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" <me>')
+        send_command('wait 5.0;input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" '..user_settings.target)
     end
 end
 function self_command(command)
@@ -182,9 +195,9 @@ function self_command(command)
                 gs_skill.skillup_type = v
                 skilluprun = true
                 if #gs_skill.skillup_spells > 0 then
-                    gs_skill.skillup_spells:clear()
+					add_to_chat(123,"cleared spells")
                 end
-                local skill_id = {["Healing"]=33,["Enhancing"]=34,["Summoning"]=38,["Ninjutsu"]=39,["Singing"]=40,["Blue"]=43}
+                local skill_id = {["Healing"]=33,["Enhancing"]=34,["Summoning"]=38,["Ninjutsu"]=39,["Singing"]=40,["Blue"]=43,["Elemental"]=36,["Dark"]=37,["Enfeebling"]=35,["Divine"]=32}
                 local spells_have = windower.ffxi.get_spells()
                 for i,v in pairs(res.spells) do
                     if v.skill == skill_id[gs_skill.skillup_type] and spell_valid(v) and spells_have[v.id] then
@@ -202,7 +215,7 @@ function self_command(command)
                     skilluprun = false
                     return
                 end
-                send_command('input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" <me>')
+                send_command('input /ma "'..gs_skill.skillup_spells[gs_skill.skillup_count]..'" '..user_settings.target)
             end
         end
     end
@@ -232,8 +245,8 @@ function spell_usable(spell)
     end
 end
 function check_skill_cap()
-    if S{'Healing','Enhancing','Blue','Summoning'}:contains(gs_skill.skillup_type) then
-        if gs_skillup.skill[gs_skill.skillup_type..' Magic Capped'] and not gs_skillup.test_mode then
+    if S{'Healing','Enhancing','Blue','Summoning','Elemental','Dark','Enfeebling','Divine'}:contains(gs_skill.skillup_type) then
+		if gs_skillup.skill[gs_skill.skillup_type..' Magic Capped'] and not gs_skillup.test_mode then
             skilluprun = false
             return true
         end
@@ -252,7 +265,7 @@ function check_skill_cap()
     end
 end
 function spell_valid(tab)
-    if (tab.levels[player.main_job_id] and tab.levels[player.main_job_id] <= player.main_job_level or tab.levels[player.sub_job_id] and tab.levels[player.sub_job_id] <= player.main_job_level) and tab.targets:contains('Self') and
+    if (tab.levels[player.main_job_id] and tab.levels[player.main_job_id] <= player.main_job_level or tab.levels[player.sub_job_id] and tab.levels[player.sub_job_id] <= player.main_job_level) and
         not tab.en:wmatch('Teleport-*|Warp*|Tractor*|Retrace|Escape|Sacrifice|Odin|Alexander|Recall-*') then
         return true
     end
@@ -260,9 +273,9 @@ end
 function shutdown_logoff()
     add_to_chat(123,"Stopping skillup")
     if end_skillup.logoff then
-        send_command('wait 3.0;input /logout')
+        send_command('wait 5.0;input /logout')
     elseif end_skillup.shutdown then
-        send_command('wait 3.0;input /shutdown')
+        send_command('wait 5.0;input /shutdown')
     end
     initialize(window, gs_skillup.box, 'window')
     updatedisplay()
@@ -304,6 +317,10 @@ function initialize(text, settings, a)
         properties:append('${SINc}')
         properties:append('${BLUc}')
         properties:append('${SMNc}')
+		properties:append('${ELEc}')
+		properties:append('${DARc}')
+		properties:append('${ENFc}')
+		properties:append('${DIVc}')
         properties:append('${STOPc}')
         properties:append('${DOWNc}')
         properties:append('${LOGc}')
@@ -328,6 +345,10 @@ function updatedisplay()
         info.skill.Summoning = gs_skillup.skill['Summoning Magic Capped'] and "Capped" or gs_skillup.skill['Summoning Magic Level']
         info.skill.Ninjutsu = (gs_skillup.skill['Ninjutsu Capped'] and "Capped" or gs_skillup.skill['Ninjutsu Level'])
         info.skill.Blue = (gs_skillup.skill['Blue Magic Capped'] and "Capped" or gs_skillup.skill['Blue Magic Level'])
+		info.skill.Elemental = (gs_skillup.skill['Elemental Magic Capped'] and "Capped" or gs_skillup.skill['Elemental Magic Level'])
+		info.skill.Dark = (gs_skillup.skill['Dark Magic Capped'] and "Capped" or gs_skillup.skill['Dark Magic Level'])
+		info.skill.Enfeebling = (gs_skillup.skill['Enfeebling Magic Capped'] and "Capped" or gs_skillup.skill['Enfeebling Magic Level'])
+		info.skill.Divine = (gs_skillup.skill['Divine Magic Capped'] and "Capped" or gs_skillup.skill['Divine Magic Level'])
         info.skillbulk = info.skill[info.mode]
         info.type = end_skillup.stoptype
         info.skill_ph = (get_rate(gs_skillup.skill_ups) or 0) / 10
@@ -338,6 +359,10 @@ function updatedisplay()
         info.SINc = (gs_skillup.color.SIN and 'Start Singing' or '\\cs(255,0,0)Start Singing\\cr')
         info.BLUc = (gs_skillup.color.BLU and 'Start Blue Magic' or '\\cs(255,0,0)Start Blue Magic\\cr')
         info.SMNc = (gs_skillup.color.SMN and 'Start Summoning Magic  ' or '\\cs(255,0,0)Start Summoning Magic\\cr  ')
+		info.ELEc = (gs_skillup.color.ELE and 'Start Elemental Magic  ' or '\\cs(255,0,0)Start Elemental Magic\\cr  ')
+		info.ENFc = (gs_skillup.color.ENF and 'Start Enfeebling Magic  ' or '\\cs(255,0,0)Start Enfeebling Magic\\cr  ')
+		info.DARc = (gs_skillup.color.DAR and 'Start Dark Magic  ' or '\\cs(255,0,0)Start Dark Magic\\cr  ')
+		info.DIVc = (gs_skillup.color.DIV and 'Start Divine Magic  ' or '\\cs(255,0,0)Start Divine Magic\\cr  ')
         info.STOPc = (gs_skillup.color.STOP and 'Stop Skillups' or '\\cs(255,0,0)Stop Skillups\\cr')
         info.DOWNc = (gs_skillup.color.DOWN and 'Shutdown After Skillup' or '\\cs(255,0,0)Shutdown After Skillup\\cr')
         info.LOGc = (gs_skillup.color.LOG and  'Logoff After Skillup' or '\\cs(255,0,0)Logoff After Skillup\\cr')
@@ -415,8 +440,8 @@ windower.raw_register_event('mouse', function(type, x, y, delta, blocked)
         elseif button:hover(x, y) and button:visible() then
             window:pos((gs_skillup.boxa.pos.x + 145), gs_skillup.boxa.pos.y)
             for i, v in ipairs(location) do
-                local switch = {[1]='REF',[2]="HEL",[3]="ENH",[4]="NIN",[5]="SIN",[6]="BLU",[7]="SMN",[8]="STOP",[8]="DOWN",
-                                [9]="LOG",[10]="TEST"}
+                local switch = {[1]="HEL",[2]="ENH",[3]="NIN",[4]="SIN",[5]="BLU",[6]="SMN",[7]="ELE",[8]="DAR",[9]="ENF",[10]="DIV",[11]="STOP",[12]="DOWN",
+                                [13]="LOG",[14]="TEST"}
                 if hy > location[i].ya and hy < location[i].yb then
                     set_color(switch[i])
                     updatedisplay()
@@ -430,8 +455,8 @@ windower.raw_register_event('mouse', function(type, x, y, delta, blocked)
         if button:hover(x, y) and button:visible() then
             for i, v in ipairs(location) do
                 local switchb = {[1]="start Healing",[2]="start Enhancing",[3]="start Ninjutsu",
-                                [4]="start Singing",[5]="start Blue",[6]="start Summoning",[7]="skillstop",[8]="aftershutdown",
-                                [9]="afterlogoff",[10]="changeinstrument"}
+                                [4]="start Singing",[5]="start Blue",[6]="start Summoning",[7]="start Elemental",[8]="start Dark",[9]="start Enfeebling",[10]="start Divine",[11]="skillstop",[12]="aftershutdown",
+                                [13]="afterlogoff",[14]="changeinstrument"}
                 if hy > location[i].ya and hy < location[i].yb then
                     send_command("gs c "..switchb[i])
                     updatedisplay()
