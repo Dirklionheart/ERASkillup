@@ -1,6 +1,6 @@
 packets = require('packets')
 res = require('resources')
---version 20251015
+--version 20251023
 ----------USER IN CODE SETTINGS----------
 ---Put the spells you want to use in these tables
 ---Example: for healing Healing = T{'Cure','Cure II'},
