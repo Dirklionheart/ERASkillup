@@ -37,7 +37,7 @@ Then extract and copy skillup.lua to your gearswap/data/(playername) folder
 
 You can still use the commands below
 
-	--this tool is set it and forget it you can leave it running for hours as long as se does not log you out it will keep running--
+	--this tool is set it and forget it you can leave it running for hours--
 	1.)place "skillup.lua" in your normal gearswap folder(where all your job files are)
 	2.)then us "gs l skillup.lua" to load this skill up in to gearswap
 	3.) on lines 22 and 25 of this file you can put in you wind and string instruments
