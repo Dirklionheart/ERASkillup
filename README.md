@@ -36,13 +36,13 @@ A menu so you dont have to send commands to windower(the commands will continue 
 
 To download click the "Clone or download" to the upper right the select "Download Zip"
 
-Then extract and copy skillup.lua to your gearswap/data/(playername) folder
+Then extract and copy eraskillup.lua to your gearswap/data/(playername) folder
 
 You can still use the commands below
 
 	--this tool is set it and forget it you can leave it running for hours--
-	1.)place "skillup.lua" in your normal gearswap folder(where all your job files are)
-	2.)then us "gs l skillup.lua" to load this skill up in to gearswap
+	1.)place "eraskillup.lua" in your normal gearswap folder(where all your job files are)
+	2.)then us "gs l eraskillup.lua" to load this skill up in to gearswap
 	3.) on lines 22 and 25 of this file you can put in you wind and string instruments
     to start Healing magic skillup use command "gs c start healing"
     to start Enhancing magic skillup use command "gs c start enhancing"
