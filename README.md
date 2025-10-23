@@ -1,10 +1,6 @@
-Gearswap-Skillup
+ERA Skillup Tool
 ================
 ver: 20251023
-
-Original script by madantichris and smd111
-
-It does:
 
 Healing
 
